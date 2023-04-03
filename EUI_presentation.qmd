@@ -1,0 +1,333 @@
+---
+title: "Economic and Empirical Facts about Privately Issued Tokens"
+format: 
+  revealjs:
+    self-contained: true
+author: James T.E. Chapman
+institute: Bank of Canada
+date: April 3 2023
+slide-level: 2
+transition: concave
+slide-number: c/t
+execute: 
+  echo: false
+---
+
+The views expressed in this presentation are solely those of the author and may differ from official Bank of Canada views. No responsibility for them should be attributed to the Bank of Canada.
+
+```{r, initialize analysis}
+#| results: false
+#| error: false
+#| warning: false
+
+options(tidyverse.quiet = TRUE)
+library(tidyverse,warn.conflicts = FALSE)
+library(lubridate,warn.conflicts = FALSE)
+library(ggthemes)
+library(scales)
+library(gt,warn.conflicts = FALSE)
+# Data set for the presentation 
+load("data/presentation_data.Rdata")
+```
+
+## Plan of talk and key points
+
+Crypto-currencies a talk in three acts
+
+The era of crypto currencies (2009-2015)
+
+```         
+- BTC gets lost a lot
+- Miners are very concentrated
+```
+
+The era of smart contracts (2015-2018)
+
+```         
+- Tokens and exchanges start and fail all the time
+- The real interesting thing is the exchange
+```
+
+The current era of Decentralized Finance (DeFi) (2018-present)
+
+```         
+- "Stable"coins have gotten large very fast
+- DeFi has also grown but is still relatively small
+```
+
+# Era of Crypto-currencies
+
+![](graphics/Bitcoin-Genesis-block.jpg)
+
+## In the beginning was Bitcoin...
+
+-   "The path to Bitcoin is littered with the corpses of failed attempts." BTC built on a the work of CS researchers to create a digital money that began in the 90s.
+-   Key points about Bitcoin for the graphs below:
+    -   All responsibility is with the user
+    -   Miners are central to this process
+
+::: notes
+The quote is from the preface of Narayanan et. al. (2017)
+:::
+
+## BTC takes off...
+
+```{r BTC address}
+btc_add |> ggplot(aes(x=date,y=BTC_tot_add/1E6)) + geom_line() +
+  labs(y="Total BTC addresses", title = "Distinct BTC wallets",
+       subtitle="In thousands", caption = "Source: Chainalysis") + theme_tufte() 
+```
+
+::: notes
+Source : [Glassnode BTC Addresses](https://studio.glassnode.com/metrics?a=BTC&m=addresses.ActiveCount&modal=loginForm)
+
+This is the number of addresses that have been created to a given date on the x axis.
+:::
+
+## But people lose their keys...(like me)
+
+```{r BTC HODL waves}
+btc_hodl_wave |> ggplot(aes(x=date,y=amount,fill=duration)) + geom_area() + theme_tufte() + 
+  scale_x_date(breaks="years",labels=date_format("%Y")) +
+  labs(x="",y="", caption="Source: Glassnode")
+```
+
+Each area is the share of BTC that has not moved in that amount of time (ex 10 years+ in top right corner)
+
+::: notes
+Source : [Glassnode HODL waves](https://studio.glassnode.com/metrics?a=BTC&category=&m=supply.HodlWaves&modal=loginForm&s=1578727884&u=1651017600&zoom=)
+
+for a given vertical slice of the graph this is the share of coins that have note moved for a given period. So for example when the "\>10y" section appears this includes coins that have not moved in the last 10 years. With this slice of the graphic appearing 10 years after BTC started.
+
+An overview of this can be found [here](https://unchained.com/blog/hodl-waves-1/)
+:::
+
+## Mining is a concentrated market
+
+```{r miner concentration}
+ miners |> ggplot(aes(x=reorder(pool, pct_share),y=pct_share)) + geom_col() + coord_flip() + 
+  labs(title="Share of mining by mining pools",
+       x = "Share of hashes",
+       y="",
+       caption = "Averaged over 3 months and downloaded from BTC.com on Mar 26 2022") + theme_tufte()  
+```
+
+::: notes
+Source: [BCT.com](https://btc.com/btc/insights-pools)
+
+This is the share each mining pool won for all blocks over a given period. In this case three months.
+
+The shading shows that larger pools charge higher fees due to better risk sharing. this is due to the fact that larger pools will have a lower variance in the arrival time of winning blocks. This is in line with the results of Cong et. al. (2020)
+:::
+
+## BTC is losing dominance in cryptomarkets
+
+```{r}
+
+dominance |> ggplot(aes(x=date,y=btc_dominance)) + geom_line() +
+                  labs(title= "BTC share of marketcap of cryptos",
+                       x="",
+                       y="BTC Share of Marketcap",
+                       caption="Source: Coinmarketcap.com") + theme_tufte() + 
+  scale_x_date(breaks="years",labels=date_format("%Y"))
+```
+
+BTC is only about 40% of all crypto marketcap.
+
+::: notes
+Source : [Coinmarketcap.com](https://coinmarketcap.com/charts/)
+
+This represents the share of BTC form the total market capitalization of all tokens on Coinmarketcap.com
+:::
+
+#  Era of smart contracts (2015-2018)
+
+![](graphics/quadriga.jpeg)
+
+::: notes
+Quadriga CX was a famous failed exchange in Canada. The owner of the exchange died in India without having revealed the keys to the exchange's cold wallets. More details can be found [here](https://en.wikipedia.org/wiki/Quadriga_Fintech_Solutions)
+:::
+
+## Etherium: the world computer
+
+-   Etherium was launched in 2015 as a platform for smart contracts. This is the most successful platform for them
+-   A smart contract is a piece of code on the blockchain that has the ability to move value (ie tokens) between addresses.
+
+## The Importance of ETH in the Ecosystem
+
+```{r eth dominance}
+dominance |> filter(date > "2021-01-01") |> ggplot(aes(x=date,y=eth_dominance)) + geom_line() +
+                  labs(title= "ETH share of marketcap of cryptos",
+                       x="",
+                       y="ETH Share of Marketcap",
+                       caption="Source: Coinmarketcap.com") + theme_tufte() + 
+  scale_x_date(breaks="years",labels=date_format("%Y"))
+```
+
+
+## Initial Coin Offerings (ICOs)
+
+-   Individuals could build platforms on the Etherium blockchain with their own tokens
+-   Also with little regulation (true wild west)
+-   The rise of ICOs also led to a rise in exchanges
+
+
+## Exit and Entry of Coins
+
+```{r entry and exit}
+BD_tokens |> 
+  filter(date > "2019-01-01", date < "2023-01-01") |> 
+  ggplot(aes(x=date)) + geom_bar(aes(y=starts),fill="blue",stat="identity") +
+  geom_bar(aes(y=-ends),fill="red",stat="identity") + labs(caption = "Source: Coinmarketcap", x="",y="Number of Tokens") + theme_tufte()
+```
+
+::: notes
+Source: [coinmarketcap.com](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeMarketpairsLatest)
+
+This is calculated by examining the first and last dates a given token was observed with volume on all exchanges. The number of new and failing coins where summed by week to provide the bars observed.
+:::
+
+## Exchange Entry and Exit
+
+```{r exchange entry and exit}
+BD_exchange[is.na(BD_exchange)] <- 0
+BD_exchange |> filter(date > "2019-01-01", date < "2023-01-01") |> ggplot(aes(x=date,y=starts)) + 
+  geom_bar(fill="blue",stat="identity") + geom_bar(aes(y=-ends),fill="red",stat="identity") + labs(x="date",y="Number of exchanges", caption="new and failed exchanges per month. Source: Coinmarketcap") + theme_tufte()
+```
+
+::: notes
+Source: [coinmarketcap.com](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeInfo)
+
+This is a calculated value from the CMC API. Each exchange that has a start and end date is used. These dates are rounded to the month and the number of new and exiting exchanges are then summed to create the bar chart.
+:::
+
+## Tokens listing on exchanges
+
+```{r exchanges}
+num_traded_exchanges |> ggplot(aes(x=n)) + 
+  geom_histogram(bins = 200) + 
+  theme_tufte() + 
+  labs(title = "Number of cryptos traded on the median exchange: 25",
+        x="Number of cryptos",
+       y="Number of exchanges", 
+       caption="Source: Coinmarketcap") +
+  scale_x_continuous(n.breaks = 15)
+```
+
+## Exchange per crypto
+
+```{r tokens}
+num_traded_crypto |> ggplot(aes(x=n)) + 
+  geom_histogram(bins = 200) + 
+  theme_tufte() + 
+  labs(title = "Number of exchanges the median crypto is traded on: 1",
+        x="Number of exchange",
+       y="Number of cryptos", 
+       caption="Source: Coinmarketcap") +
+  scale_x_continuous(n.breaks = 15)
+```
+
+
+
+::: notes
+Source: [coinmarketcap.com](https://coinmarketcap.com/api/documentation/v1/#operation/getV1ExchangeMarketpairsLatest)
+
+This is a calculated value. For each exchange the number of unique quoted token is summed per exchange and the various statistics are then taken. This may undercount traditional used base tokens (ie BTC, ETH, USDT). this may bias the mean downward slightly.
+:::
+
+# Era of DeFi (2018-)
+
+![](graphics/uniswap.png){.r-stretch}
+
+## Stablecoins
+
+-   Stablecoins were developed to provide investors a way to park their value in a "safe" instrument.
+-   Three types of stablecoins:
+    - TradFi backed (Tether, USDC): connections to traditional finance could cause financial instability
+    - Crypto backed (Dai): business model not been stress tested yet
+    - Algorithic (Terra): Not a stable business model
+-  Has become central to DeFi
+
+## Marketcap of Stablecoins
+
+```{r stablecoins}
+
+market_caps |> ggplot(aes(x=date,y=marketcap/1E9,fill=token)) + 
+  geom_area() + labs(x="",y="Marketcap in billions USD",caption="Source: Glassnode.com, Coinmarketcap.com") + theme_tufte()
+```
+
+::: notes
+Source: [Glassnode](https://studio.glassnode.com/metrics?a=BUSD&m=market.MarketcapUsd)
+
+This is the USD marketcap for various stablecoins on Glassnode.
+:::
+
+## Decentralized Finance
+
+-   Smart contracts and stablecoins formed the basis on which decentralized finance was built
+-   Users pledge (lock) tokens into a given DeFi entities smart contract.
+
+## Total Value Locked
+
+```{r TVL}
+TVL |> ggplot(aes(x=date,y=tvl/1E9)) + 
+  geom_line(col="red") + 
+  scale_x_date(breaks="years",labels=date_format("%Y")) +
+  labs(x="",
+       y="TVL (in USD billions)",
+       caption="Source:  DefiLlama") + 
+  theme_tufte()
+```
+
+::: notes
+Source: [DeFiLlama](https://defillama.com) but extracted via glassnode
+
+This is the total value of tokens across all observed blockchains into all observed DeFi entities. Note this contains exchanges as well as insurance companies, and other entities.
+:::
+
+## Total Value Locked
+
+```{r exchange and TVL}
+tvl_ex <- TVL |>  left_join(exchange_totals,by="date")
+tvl_ex|> ggplot(aes(x=date,y=tvl/1E9)) + 
+  geom_line(col="red") + geom_line(aes(y = ex_total/1E9), col="blue") +
+  scale_x_date(breaks="years",labels=date_format("%Y")) +
+  labs(title="Total value locked in red, Exchange wallets in blue",
+       x="",
+       y="Value (in USD billions)",
+       caption="Source: Glassnode and DefiLlama") + 
+  theme_tufte()
+
+```
+
+::: notes
+Source : [Glassnode](https://studio.glassnode.com/metrics?a=BUSD&category=Exchanges&m=distribution.BalanceExchanges)
+
+The TVL is the same as the previous slide. The exchange value is the total amount of tokens in identified exchange wallets across all observed chains and tokens.
+
+Note: The TVL amount likely is an over count of *trading* activity compared to the exchanges (which are only trading). My rough guess is this overcount is a factor of about two
+:::
+
+# Conclusion
+
+## Conclusion
+
+Still lots of research questions to explore and crypto is a great laboratory to do it in since:
+
+1.  The data is very good and relatively cheap
+2.  Lack of regulation allows innovation to run unchecked
+
+BUT...
+
+------------------------------------------------------------------------
+
+-   Open question about how sector will behave in era of high interest rates?
+-   We all lose coins. What happens in the long-run?
+
+# "Where can I find the data?"
+
+This talk (available on GH ["james-crypto-research/EUI_2023"](https://github.com/James-Crypto-Research/EUI_2023)) uses data from the following data sources:
+
+-   Glassnode: blockchain assets (using ["james-crypto-research/GlassnodeR"](https://github.com/James-Crypto-Research/GlassnodeR))
+-   DeFiLlama: DeFi protocols (using ["james-crypto-research/RefiLlama"](https://github.com/James-Crypto-Research/RefiLllama))
+-   Coinmarketcap: tokens and exchanges. Very human dependent (using ["james-crypto-research/CMCR"](https://github.com/James-Crypto-Research/CMCR))
